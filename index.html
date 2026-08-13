@@ -3077,35 +3077,6 @@
       transform: translateY(0);
     }
 
-    .heel-luxury-close {
-      position: absolute;
-      top: 22px;
-      right: 24px;
-      z-index: 20;
-      width: 42px;
-      height: 42px;
-      border: 1px solid rgba(27,20,17,0.18);
-      border-radius: 50%;
-      background: rgba(243,238,230,0.86);
-      color: #261d18;
-      font-family: Georgia, serif;
-      font-size: 1rem;
-      cursor: pointer;
-      transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        transform 0.2s ease;
-      backdrop-filter: blur(10px);
-    }
-
-    .heel-luxury-close:hover,
-    .heel-luxury-close:focus-visible {
-      background: #7f1d32;
-      color: #fff8ef;
-      transform: rotate(6deg);
-      outline: none;
-    }
-
     .heel-luxury-art {
       position: relative;
       min-height: 680px;
@@ -3122,6 +3093,17 @@
       background:
         radial-gradient(circle at 32% 27%, rgba(255,255,255,0.10), transparent 22%),
         linear-gradient(115deg, transparent 0 41%, rgba(255,255,255,0.035) 41% 41.3%, transparent 41.3% 100%);
+      pointer-events: none;
+    }
+
+    .heel-luxury-eiffel {
+      position: absolute;
+      right: -8%;
+      bottom: -4%;
+      width: 62%;
+      height: auto;
+      color: rgba(255,255,255,0.05);
+      z-index: 1;
       pointer-events: none;
     }
 
@@ -3164,6 +3146,7 @@
 
     .heel-luxury-shoe-stage {
       position: absolute;
+      z-index: 2;
       inset: 98px 30px 96px;
       display: flex;
       align-items: center;
@@ -7856,84 +7839,126 @@
       color: rgba(255,255,255,0.9);
     }
 
-    /* ---------- AR ANNOTATIONS ---------- */
+    /* ---------- AR ANNOTATIONS ----------
+       Each object gets a small pulsing dot instead
+       of a permanently-visible label card. Tapping a
+       dot reveals its card for a few seconds. This
+       solves the density problem on any screen shape
+       — dots never collide with each other the way
+       text cards did, so all 7 can stay in play
+       instead of trimming down for mobile.
+       Positions are computed in JS from the photo's
+       own actual on-screen rectangle (accounting for
+       how object-fit:cover crops differently at
+       different aspect ratios), not simple CSS
+       percentages of the screen — that mismatch was
+       the reason dots used to drift off their real
+       target on some phones. */
 
     .rose-annotation {
       position: absolute;
 
       z-index: 2;
 
-      opacity: 0;
-
-      transition:
-        opacity 0.5s ease,
-        transform 0.5s ease;
+      transform: translate(-50%, -50%);
     }
 
-    .rose-annotation.dir-up {
-      transform: translateY(6px);
+    .rose-annotation-dot {
+      position: relative;
+
+      width: 30px;
+      height: 30px;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      cursor: pointer;
+
+      background: none;
+
+      border: none;
+
+      padding: 0;
+
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .rose-annotation.dir-down {
-      transform: translateY(-6px);
-    }
+    .rose-annotation-dot::before {
+      content: "";
 
-    .rose-mode-overlay.show .rose-annotation.in {
-      opacity: 1;
-
-      transform: translateY(0);
-    }
-
-    .rose-annotation-ring {
       position: absolute;
 
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
 
       border: 1.5px solid rgba(255,214,226,0.95);
 
       border-radius: 50%;
 
-      left: 50%;
-      top: 50%;
+      box-shadow: 0 0 10px rgba(255,180,200,0.55);
 
-      transform: translate(-50%, -50%);
+      opacity: 0;
 
-      box-shadow: 0 0 10px rgba(255,180,200,0.5);
+      transform: scale(0.5);
+
+      transition:
+        opacity 0.4s ease,
+        transform 0.4s
+        cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
-    .rose-annotation-ring::after {
+    .rose-mode-overlay.show .rose-annotation.in .rose-annotation-dot::before {
+      opacity: 1;
+
+      transform: scale(1);
+    }
+
+    .rose-annotation-dot::after {
       content: "";
 
       position: absolute;
 
-      inset: -5px;
-
-      border: 1px solid rgba(255,214,226,0.4);
+      width: 12px;
+      height: 12px;
 
       border-radius: 50%;
+
+      border: 1px solid rgba(255,214,226,0.55);
+
+      opacity: 0;
     }
 
-    .rose-annotation-line {
-      position: absolute;
-
-      left: 50%;
-
-      width: 1px;
-
-      background: rgba(255,214,226,0.7);
+    .rose-mode-overlay.show .rose-annotation.in .rose-annotation-dot::after {
+      animation:
+        roseDotPing
+        2.4s
+        ease-out
+        infinite;
     }
 
-    .rose-annotation.dir-up .rose-annotation-line {
-      bottom: 100%;
+    @keyframes roseDotPing {
 
-      height: 26px;
-    }
+      0% {
+        opacity: 0.7;
 
-    .rose-annotation.dir-down .rose-annotation-line {
-      top: 100%;
+        transform: scale(1);
+      }
 
-      height: 26px;
+      75% {
+        opacity: 0;
+
+        transform: scale(2.1);
+      }
+
+      100% {
+        opacity: 0;
+
+        transform: scale(2.1);
+      }
+
     }
 
     .rose-annotation-card {
@@ -7941,33 +7966,57 @@
 
       left: 50%;
 
-      transform: translateX(-50%);
+      bottom: calc(100% + 12px);
 
-      background: rgba(20,12,14,0.42);
+      transform: translateX(-50%) translateY(6px);
 
-      backdrop-filter: blur(5px);
+      background: rgba(20,12,14,0.72);
 
-      border: 1px solid rgba(255,255,255,0.22);
+      backdrop-filter: blur(6px);
 
-      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.25);
 
-      padding: 7px 11px;
+      border-radius: 9px;
+
+      padding: 8px 12px;
 
       white-space: nowrap;
 
       text-align: center;
+
+      pointer-events: none;
+
+      opacity: 0;
+
+      transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
     }
 
-    .rose-annotation.dir-up .rose-annotation-card {
-      bottom: calc(100% + 26px);
+    .rose-annotation.card-open .rose-annotation-card {
+      opacity: 1;
+
+      transform: translateX(-50%) translateY(0);
     }
 
-    .rose-annotation.dir-down .rose-annotation-card {
-      top: calc(100% + 26px);
+    /* cards on dots in the lower half of the photo
+       open downward instead, so they don't run off
+       the top edge */
+
+    .rose-annotation.card-below .rose-annotation-card {
+      bottom: auto;
+
+      top: calc(100% + 12px);
+
+      transform: translateX(-50%) translateY(-6px);
+    }
+
+    .rose-annotation.card-below.card-open .rose-annotation-card {
+      transform: translateX(-50%) translateY(0);
     }
 
     .rose-annotation-title {
-      font-size: 0.62rem;
+      font-size: 0.64rem;
 
       font-weight: 800;
 
@@ -7977,7 +8026,7 @@
     }
 
     .rose-annotation-sub {
-      font-size: 0.72rem;
+      font-size: 0.74rem;
 
       font-weight: 700;
 
@@ -7987,7 +8036,7 @@
     }
 
     .rose-annotation-conf {
-      font-size: 0.58rem;
+      font-size: 0.6rem;
 
       color: rgba(255,255,255,0.65);
 
@@ -8162,34 +8211,12 @@
 
     @media (max-width: 640px) {
 
-      /* Four of the seven annotations get tight
-         enough on a narrow, tall crop that they
-         start overlapping each other — the brief
-         explicitly allows fewer simultaneous labels
-         on mobile rather than forcing all seven into
-         a cramped vertical frame. Roses, the couple,
-         and the cat stay; the rest step aside. */
-
-      .rose-annotation.rose-mobile-trim {
-        display: none;
-      }
-
-      /* nudge the three remaining annotations apart —
-         inline left/top need !important to override */
-
-      .rose-annotation[style*="left:16%"] {
-        left: 22% !important;
-        top: 30% !important;
-      }
-
-      .rose-annotation[style*="left:38%"] {
-        left: 50% !important;
-        top: 48% !important;
-      }
-
-      .rose-annotation[style*="left:61%"] {
-        top: 58% !important;
-      }
+      /* Dots are tiny and never collide with each
+         other regardless of screen shape, so unlike
+         the old always-visible cards, nothing needs
+         to be hidden or repositioned for mobile here.
+         The bottom status chips are still dropped on
+         small screens just to keep things calm. */
 
       .rose-hud-bottom {
         display: none;
@@ -12191,16 +12218,36 @@
 
     <div class="heel-luxury-book">
 
-      <button
-        class="heel-luxury-close"
-        id="heelModeClose"
-        type="button"
-        aria-label="Close Maison Trenee presentation"
-      >
-        ✕
-      </button>
-
       <section class="heel-luxury-art" aria-label="Luxury mid-heel campaign image">
+
+        <svg class="heel-luxury-eiffel" viewBox="0 0 200 320" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M100 0
+               L112 90
+               L150 90
+               L124 120
+               L160 120
+               L128 155
+               L172 155
+               L134 195
+               L134 230
+               L114 230
+               L114 320
+               L86 320
+               L86 230
+               L66 230
+               L66 195
+               L28 195
+               L72 155
+               L28 155
+               L64 120
+               L38 120
+               L76 90
+               L88 90
+               Z"
+          />
+        </svg>
 
         <div class="heel-luxury-monogram" aria-hidden="true">MT</div>
 
@@ -12328,12 +12375,12 @@
         <div class="heel-luxury-art-caption">
           <div>
             <strong>Le Talon Trente-Deux</strong>
-            <span>Mid-height pump · Maison Trénée</span>
+            <span>Escarpin mi-talon · Maison Trénée</span>
           </div>
 
           <div style="text-align:right;">
             <strong>62 mm</strong>
-            <span>perfectly, aggressively reasonable</span>
+            <span>parfaitement, agressivement raisonnable</span>
           </div>
         </div>
 
@@ -12344,7 +12391,7 @@
         <div class="heel-luxury-foil-line" aria-hidden="true"></div>
 
         <div class="heel-luxury-kicker">
-          Maison Trénée · Atelier de Chaussures
+          Maison Trénée · Atelier de Chaussures · Paris
         </div>
 
         <h2 class="heel-luxury-title">
@@ -12353,8 +12400,8 @@
         </h2>
 
         <p class="heel-luxury-deck">
-          A study in proportion, restraint, and the highly specific conviction
-          that a heel can be elegant without becoming an architectural hazard.
+          Une étude de proportion, de retenue, et de la conviction très précise
+          qu’un talon peut être élégant sans devenir un péril architectural.
         </p>
 
         <div class="heel-luxury-rule"></div>
@@ -12364,42 +12411,42 @@
           <div class="heel-luxury-row">
             <span class="heel-luxury-label">Silhouette</span>
             <span class="heel-luxury-value">
-              Mid-heel pump, <i>édition personnelle</i>
+              Escarpin mi-talon, <i>édition personnelle</i>
             </span>
           </div>
 
           <div class="heel-luxury-row">
-            <span class="heel-luxury-label">Heel</span>
+            <span class="heel-luxury-label">Talon</span>
             <span class="heel-luxury-value">
-              62 mm — precisely enough drama
+              62 mm — juste ce qu’il faut de théâtralité
             </span>
           </div>
 
           <div class="heel-luxury-row">
-            <span class="heel-luxury-label">Rarity</span>
+            <span class="heel-luxury-label">Rareté</span>
             <span class="heel-luxury-value">
-              <i>Très rare.</i> Seen primarily in the natural habitat of one woman.
+              <i>Très rare.</i> Aperçu principalement dans l’habitat naturel d’une seule femme.
             </span>
           </div>
 
           <div class="heel-luxury-row">
-            <span class="heel-luxury-label">Absurdity</span>
+            <span class="heel-luxury-label">Absurdité</span>
             <span class="heel-luxury-value">
-              <i>Exquise.</i> Scientifically unnecessary, aesthetically essential.
+              <i>Exquise.</i> Scientifiquement superflu, esthétiquement essentiel.
             </span>
           </div>
 
           <div class="heel-luxury-row">
-            <span class="heel-luxury-label">Balance</span>
+            <span class="heel-luxury-label">Équilibre</span>
             <span class="heel-luxury-value">
-              Civilized. Composed. Suspiciously sensible.
+              Civilisé. Posé. Étrangement raisonnable.
             </span>
           </div>
 
           <div class="heel-luxury-row">
-            <span class="heel-luxury-label">Authority</span>
+            <span class="heel-luxury-label">Autorité</span>
             <span class="heel-luxury-value">
-              Unquestioned within a 20-foot radius.
+              Incontestée dans un rayon de six mètres.
             </span>
           </div>
 
@@ -12407,25 +12454,26 @@
 
         <div class="heel-luxury-verdict">
           <div class="heel-luxury-seal" aria-hidden="true">MT</div>
-          <strong>Maison verdict</strong>
+          <strong>Verdict de la Maison</strong>
           <span>
-            Approved for evenings, birthdays, and situations requiring
-            exactly the correct amount of heel.
+            Approuvé pour les soirées, les anniversaires, et toute situation
+            exigeant précisément la bonne dose de talon.
           </span>
         </div>
 
         <div class="heel-luxury-actions">
 
           <span class="heel-luxury-note">
-            Pièce certifiée · 17 septembre · No stilettos were consulted.
+            Pièce certifiée · 17 septembre · Aucun stiletto n’a été consulté.
           </span>
 
           <button
             class="heel-luxury-return"
             id="heelModeReturn"
             type="button"
+            aria-label="Closes the boutique and returns to the birthday page — does not actually translate anything"
           >
-            Fermer la Maison
+            Translate to English
           </button>
 
         </div>
@@ -13935,11 +13983,18 @@
         <span class="rose-hud-chip">CYNICISM NOT DETECTED</span>
       </div>
 
-      <!-- AR ANNOTATIONS -->
+      <!-- AR ANNOTATIONS
+           left/top are computed by JS from these
+           data-px/data-py percentages, which are
+           positions within the PHOTO itself — not
+           the screen — so they stay correctly
+           aligned no matter how object-fit:cover
+           crops the photo at different screen
+           shapes. data-side flips the card to open
+           downward for dots near the top edge. -->
 
-      <div class="rose-annotation dir-up" data-delay="1300" style="left:16%; top:40%;">
-        <span class="rose-annotation-ring"></span>
-        <span class="rose-annotation-line"></span>
+      <div class="rose-annotation" data-px="15" data-py="35" data-side="below" data-order="0">
+        <button class="rose-annotation-dot" type="button" aria-label="Roses"></button>
         <div class="rose-annotation-card">
           <div class="rose-annotation-title">ROSES</div>
           <div class="rose-annotation-sub">OBJECTIVELY PERFECT</div>
@@ -13947,9 +14002,8 @@
         </div>
       </div>
 
-      <div class="rose-annotation dir-down rose-mobile-trim" data-delay="1500" style="left:9%; top:8%;">
-        <span class="rose-annotation-ring"></span>
-        <span class="rose-annotation-line"></span>
+      <div class="rose-annotation" data-px="7" data-py="8" data-side="below" data-order="1">
+        <button class="rose-annotation-dot" type="button" aria-label="Weather"></button>
         <div class="rose-annotation-card">
           <div class="rose-annotation-title">WEATHER EVENT</div>
           <div class="rose-annotation-sub">FREE GARDEN WATER</div>
@@ -13957,46 +14011,41 @@
         </div>
       </div>
 
-      <div class="rose-annotation dir-up" data-delay="1700" style="left:38%; top:42%;">
-        <span class="rose-annotation-ring"></span>
-        <span class="rose-annotation-line"></span>
+      <div class="rose-annotation" data-px="47" data-py="50" data-side="below" data-order="2">
+        <button class="rose-annotation-dot" type="button" aria-label="Important people"></button>
         <div class="rose-annotation-card">
           <div class="rose-annotation-title">IMPORTANT PEOPLE &#10084;&#65039;</div>
           <div class="rose-annotation-sub">Priority: Maximum</div>
         </div>
       </div>
 
-      <div class="rose-annotation dir-down" data-delay="1900" style="left:61%; top:64%;">
-        <span class="rose-annotation-ring"></span>
-        <span class="rose-annotation-line"></span>
+      <div class="rose-annotation" data-px="73" data-py="78" data-side="above" data-order="3">
+        <button class="rose-annotation-dot" type="button" aria-label="Ginger cat"></button>
         <div class="rose-annotation-card">
           <div class="rose-annotation-title">GINGER CAT</div>
-          <div class="rose-annotation-sub">JUST A BABY</div>
+          <div class="rose-annotation-sub">CERTIFIED CUTIE</div>
           <div class="rose-annotation-conf">Further analysis unnecessary.</div>
         </div>
       </div>
 
-      <div class="rose-annotation dir-down rose-mobile-trim" data-delay="2100" style="left:75%; top:65%;">
-        <span class="rose-annotation-ring"></span>
-        <span class="rose-annotation-line"></span>
+      <div class="rose-annotation" data-px="89" data-py="82" data-side="above" data-order="4">
+        <button class="rose-annotation-dot" type="button" aria-label="Color analysis"></button>
         <div class="rose-annotation-card">
           <div class="rose-annotation-title">COLOR ANALYSIS</div>
           <div class="rose-annotation-sub">CORRECT.</div>
         </div>
       </div>
 
-      <div class="rose-annotation dir-down rose-mobile-trim" data-delay="2300" style="left:29%; top:64%;">
-        <span class="rose-annotation-ring"></span>
-        <span class="rose-annotation-line"></span>
+      <div class="rose-annotation" data-px="37" data-py="83" data-side="above" data-order="5">
+        <button class="rose-annotation-dot" type="button" aria-label="Imperfection detected"></button>
         <div class="rose-annotation-card">
           <div class="rose-annotation-title">IMPERFECTION DETECTED</div>
           <div class="rose-annotation-sub">KINDA CUTE ACTUALLY</div>
         </div>
       </div>
 
-      <div class="rose-annotation dir-up rose-mobile-trim" data-delay="2500" style="left:73%; top:37%;">
-        <span class="rose-annotation-ring"></span>
-        <span class="rose-annotation-line"></span>
+      <div class="rose-annotation" data-px="85" data-py="40" data-side="below" data-order="6">
+        <button class="rose-annotation-dot" type="button" aria-label="Object assessment"></button>
         <div class="rose-annotation-card">
           <div class="rose-annotation-title">OBJECT ASSESSMENT</div>
           <div class="rose-annotation-sub">PRETTY GOOD :)</div>
@@ -16474,7 +16523,7 @@
             )
           ) {
 
-            level32ModeContinue.focus();
+            level32ModeContinue.focus({ preventScroll: true });
 
           }
 
@@ -16506,7 +16555,7 @@
 
       if (level32ModeBadge) {
 
-        level32ModeBadge.focus();
+        level32ModeBadge.focus({ preventScroll: true });
 
       }
 
@@ -16590,11 +16639,6 @@
         "heelModeBadge"
       );
 
-    const heelModeClose =
-      document.getElementById(
-        "heelModeClose"
-      );
-
     const heelModeReturn =
       document.getElementById(
         "heelModeReturn"
@@ -16630,7 +16674,7 @@
             heelModeReturn
           ) {
 
-            heelModeReturn.focus();
+            heelModeReturn.focus({ preventScroll: true });
 
           }
 
@@ -16652,7 +16696,7 @@
       );
 
       if (heelModeBadge) {
-        heelModeBadge.focus();
+        heelModeBadge.focus({ preventScroll: true });
       }
 
     }
@@ -16682,14 +16726,6 @@
         }
       );
 
-    }
-
-
-    if (heelModeClose) {
-      heelModeClose.addEventListener(
-        "click",
-        hideHeelMode
-      );
     }
 
 
@@ -16786,7 +16822,7 @@
       setTimeout(
         () => {
           if (gingerHrClose) {
-            gingerHrClose.focus();
+            gingerHrClose.focus({ preventScroll: true });
           }
         },
         110
@@ -16815,7 +16851,7 @@
       }
 
       if (gingerHrBadge) {
-        gingerHrBadge.focus();
+        gingerHrBadge.focus({ preventScroll: true });
       }
 
     }
@@ -17506,7 +17542,7 @@
         () => {
 
           if (linkedinModeClose) {
-            linkedinModeClose.focus();
+            linkedinModeClose.focus({ preventScroll: true });
           }
 
         },
@@ -17532,7 +17568,7 @@
       resetLinkedinRecruiter();
 
       if (linkedinModeBadge) {
-        linkedinModeBadge.focus();
+        linkedinModeBadge.focus({ preventScroll: true });
       }
 
     }
@@ -17877,7 +17913,7 @@
 
       if (dischargeButton) {
 
-        dischargeButton.focus();
+        dischargeButton.focus({ preventScroll: true });
 
       }
 
@@ -17901,7 +17937,7 @@
 
       if (doctorModeBadge) {
 
-        doctorModeBadge.focus();
+        doctorModeBadge.focus({ preventScroll: true });
 
       }
 
@@ -18011,7 +18047,7 @@
 
       if (redditModeClose) {
 
-        redditModeClose.focus();
+        redditModeClose.focus({ preventScroll: true });
 
       }
 
@@ -18035,7 +18071,7 @@
 
       if (redditModeBadge) {
 
-        redditModeBadge.focus();
+        redditModeBadge.focus({ preventScroll: true });
 
       }
 
@@ -18146,7 +18182,7 @@
 
       if (themeParkModeClose) {
 
-        themeParkModeClose.focus();
+        themeParkModeClose.focus({ preventScroll: true });
 
       }
 
@@ -18170,7 +18206,7 @@
 
       if (themeParkModeBadge) {
 
-        themeParkModeBadge.focus();
+        themeParkModeBadge.focus({ preventScroll: true });
 
       }
 
@@ -18720,8 +18756,153 @@
         "roseEnvironment"
       );
 
-    let roseRevealTimeouts = [];
+    const rosePhotoEl =
+      roseScene ?
+      roseScene.querySelector(
+        ".rose-photo"
+      ) :
+      null;
 
+    let roseRevealTimeouts = [];
+    let roseOpenCard = null;
+
+
+    /* Positions each dot from the PHOTO's own actual
+       on-screen rectangle rather than simple screen
+       percentages. object-fit:cover scales the photo
+       to the larger of (container-width/photo-width,
+       container-height/photo-height) and then crops
+       the overflow according to object-position — so
+       the visible window into the photo shifts with
+       the container's aspect ratio. This reproduces
+       that math so a dot at "16%, 40% of the photo"
+       lands on the same real spot in the picture no
+       matter what shape the screen is. */
+
+    function roseLayoutAnnotations() {
+
+
+      if (!roseScene || !rosePhotoEl) {
+
+        return;
+
+      }
+
+      if (
+        !rosePhotoEl.naturalWidth ||
+        !rosePhotoEl.naturalHeight
+      ) {
+
+        return;
+
+      }
+
+
+      const cw =
+        roseScene.clientWidth;
+
+      const ch =
+        roseScene.clientHeight;
+
+      const iw =
+        rosePhotoEl.naturalWidth;
+
+      const ih =
+        rosePhotoEl.naturalHeight;
+
+
+      const scale =
+        Math.max(
+          cw / iw,
+          ch / ih
+        );
+
+      const displayedW =
+        iw * scale;
+
+      const displayedH =
+        ih * scale;
+
+      /* object-position is "center 42%" */
+
+      const posXPercent = 50;
+
+      const posYPercent = 42;
+
+      const offsetX =
+        (cw - displayedW) *
+        (posXPercent / 100);
+
+      const offsetY =
+        (ch - displayedH) *
+        (posYPercent / 100);
+
+
+      roseScene.querySelectorAll(
+        ".rose-annotation"
+      ).forEach(
+        (el) => {
+
+          const px =
+            parseFloat(
+              el.getAttribute(
+                "data-px"
+              )
+            );
+
+          const py =
+            parseFloat(
+              el.getAttribute(
+                "data-py"
+              )
+            );
+
+          const screenX =
+            offsetX +
+            (px / 100) * iw * scale;
+
+          const screenY =
+            offsetY +
+            (py / 100) * ih * scale;
+
+          el.style.left =
+            screenX + "px";
+
+          el.style.top =
+            screenY + "px";
+
+          if (
+            el.getAttribute(
+              "data-side"
+            ) === "below"
+          ) {
+
+            el.classList.add(
+              "card-below"
+            );
+
+          }
+
+        }
+      );
+
+
+    }
+
+
+    function roseCloseOpenCard() {
+
+      if (roseOpenCard) {
+
+        roseOpenCard.classList.remove(
+          "card-open"
+        );
+
+        roseOpenCard = null;
+
+      }
+
+    }
 
     function roseResetAnnotations() {
 
@@ -18738,6 +18919,9 @@
       );
 
       roseRevealTimeouts = [];
+
+
+      roseCloseOpenCard();
 
 
       roseScene.querySelectorAll(
@@ -18779,19 +18963,22 @@
           ".rose-annotation"
         );
 
-      let maxDelay = 0;
+      let maxDelay = 900;
 
 
       annotations.forEach(
         (el) => {
 
-          const delay =
+          const order =
             parseInt(
               el.getAttribute(
-                "data-delay"
+                "data-order"
               ),
               10
-            ) || 1000;
+            ) || 0;
+
+          const delay =
+            900 + order * 90;
 
           maxDelay =
             Math.max(
@@ -18829,7 +19016,7 @@
             }
 
           },
-          maxDelay + 500
+          maxDelay + 700
         )
       );
 
@@ -18855,12 +19042,14 @@
       );
 
 
+      roseLayoutAnnotations();
+
       roseRevealAnnotations();
 
 
       if (roseModeClose) {
 
-        roseModeClose.focus();
+        roseModeClose.focus({ preventScroll: true });
 
       }
 
@@ -18887,10 +19076,95 @@
 
       if (roseModeBadgeEl) {
 
-        roseModeBadgeEl.focus();
+        roseModeBadgeEl.focus({ preventScroll: true });
 
       }
 
+
+    }
+
+
+    if (rosePhotoEl) {
+
+      if (rosePhotoEl.complete) {
+
+        roseLayoutAnnotations();
+
+      } else {
+
+        rosePhotoEl.addEventListener(
+          "load",
+          roseLayoutAnnotations
+        );
+
+      }
+
+    }
+
+    window.addEventListener(
+      "resize",
+      roseLayoutAnnotations
+    );
+
+    window.addEventListener(
+      "orientationchange",
+      () => {
+
+        setTimeout(
+          roseLayoutAnnotations,
+          200
+        );
+
+      }
+    );
+
+
+    if (roseScene) {
+
+      roseScene.querySelectorAll(
+        ".rose-annotation-dot"
+      ).forEach(
+        (dot) => {
+
+          dot.addEventListener(
+            "click",
+            (event) => {
+
+              event.stopPropagation();
+
+              const annotation =
+                dot.closest(
+                  ".rose-annotation"
+                );
+
+              if (!annotation) {
+
+                return;
+
+              }
+
+              const alreadyOpen =
+                annotation ===
+                roseOpenCard;
+
+              roseCloseOpenCard();
+
+              if (!alreadyOpen) {
+
+                annotation.classList.add(
+                  "card-open"
+                );
+
+                roseOpenCard =
+                  annotation;
+
+              }
+
+            }
+          );
+
+        }
+      );
 
     }
 
@@ -19118,7 +19392,7 @@
 
       if (verityModeClose) {
 
-        verityModeClose.focus();
+        verityModeClose.focus({ preventScroll: true });
 
       }
 
@@ -19151,7 +19425,7 @@
 
       if (verityModeBadgeEl) {
 
-        verityModeBadgeEl.focus();
+        verityModeBadgeEl.focus({ preventScroll: true });
 
       }
 
@@ -20182,7 +20456,7 @@
 
       if (greysideModeClose) {
 
-        greysideModeClose.focus();
+        greysideModeClose.focus({ preventScroll: true });
 
       }
 
@@ -20211,7 +20485,7 @@
 
       if (greysideModeBadgeEl) {
 
-        greysideModeBadgeEl.focus();
+        greysideModeBadgeEl.focus({ preventScroll: true });
 
       }
 
